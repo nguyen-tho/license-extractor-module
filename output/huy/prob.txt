@@ -1,0 +1,4 @@
+Mean score of model: 0.8138071298599243
+Percentage of mean score value: 81.38%
+Mean of prob values: 0.9273643293428226
+Percentage of mean prob value: 92.74%
