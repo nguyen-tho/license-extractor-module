@@ -46,21 +46,29 @@ def find_text_by_class(json_data, target_class):
     
 def merge_permanent_residence(json_path, name):
     data = read_json_file(json_path)
-
+    addr_line2_present = any(entry["class"] == "addr_line2" for entry in data)
+    not_write_classes =['addr', 'addr_line2', 'day','month', 'year']
+        
     permanent_resident1 = find_text_by_class(data, 'addr')
     permanent_resident2 = find_text_by_class(data, 'addr_line2')
     day = find_text_by_class(data, 'day')
     month = find_text_by_class(data, 'month')
     year = find_text_by_class(data, 'year')
-    not_write_classes =['addr', 'addr_line2', 'day','month', 'year']
-    if permanent_resident1 is not None and permanent_resident2 is not None and day is not None and month is not None and year is not None:
-        permanent_resident = permanent_resident1 + ", " + permanent_resident2
-        supply_date = day + '/'+month+'/'+year
-        # Create a new list with the merged permanent_resident class
+    if not addr_line2_present:
+        permanent_resident = permanent_resident1
+        if day is not None and month is not None and year is not None:
+            supply_date = day + '/'+month+'/'+year
         new_data = [{"class": "Address", "text": permanent_resident},
-                    {"class": "Supply_date", "text": supply_date}]
+                    {"class": "Issue_date", "text": supply_date}]
     else:
-        new_data = []
+        if permanent_resident1 is not None and permanent_resident2 is not None and day is not None and month is not None and year is not None:
+            permanent_resident = permanent_resident1 + ", " + permanent_resident2
+            supply_date = day + '/'+month+'/'+year
+        # Create a new list with the merged permanent_resident class
+            new_data = [{"class": "Address", "text": permanent_resident},
+                    {"class": "Issue_date", "text": supply_date}]
+        else:
+            new_data = []
     
     # Filter and keep only "class" and "text" features
     new_data.extend([{"class": item["class"], "text": item["text"]} for item in data if item["class"] not in not_write_classes])
@@ -73,7 +81,7 @@ def mean_prob(json_path, name):
   with open(json_path, 'r', encoding='utf-8') as json_file:
     data = json.load(json_file)
   prob_values = [entry["prob"] for entry in data]
-  score_value = [entry["score"] for entry in data]
+  score_value = [entry["confidence"] for entry in data]
 
 # Calculate the mean
   mean_prob = sum(prob_values) / len(prob_values)

@@ -75,7 +75,7 @@ def ocr_extract(img_path,model_path, threshold):#input image is a PIL image
                     "class": class_name,
                     "text": text.strip(),
                     "prob": prob,
-                    "score": score
+                    "confidence": score
                      })
 
 # Save labeled objects information to a JSON file
@@ -129,11 +129,14 @@ def processing(input_img_path, name):
         print(f"The {directory_path} is exist")
     #preprocessed = pre.preprocessing(input_img_path)
     model_path = 'license-yolov8xv4.pt' #model path
-    #real_out = real.realesrgan(input_img_path)
-    ocr_extract(input_img_path, model_path, 0.5)
-    save_output_image(input_img_path, model_path, 0.5, name)
+    img = cv2.imread(input_img_path)
+    real_in_path = 'temp/real_in.jpg'
+    real_in = cv2.imwrite(real_in_path, img)
+    real_out = real.realesrgan(real_in_path)
+    ocr_extract(real_out, model_path, 0.5)
+    save_output_image(real_out, model_path, 0.5, name)
     post.filter("temp/labeled_objects.json", name)
     post.merge_permanent_residence(f'output/{name}/labeled_objects_filled.json', name)
     post.mean_prob(f'output/{name}/labeled_objects_filled.json', name)
     
-processing('input\giay-phep-lai-xe-hang-a1.jpg', 'tram')
+#processing('input/20231002_150945.jpg', 'thinh1')
